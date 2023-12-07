@@ -6,7 +6,7 @@
           <ul class="nav flex-column">
             <li class="nav-item"><router-link class="nav-link" to="/dashboard">Dashboard</router-link></li>
             <li class="nav-item">
-            <button class="nav-link" @click="logout">Logout</button>
+                <button class="nav-link" @click="logout">Logout</button>
             </li>
             <!-- Add more sidebar items here -->
           </ul>
@@ -15,7 +15,13 @@
         <!-- Main content -->
         <div class="col-md-10 main-content">
           <h1>Dashboard</h1>
-          <!-- Your dashboard content here -->
+          <ul v-if="offers.length > 0">
+            <li v-for="offer in offers" :key="offer.id">
+                <!-- Display properties of the offer as needed -->
+                Offer owner: {{ offer.user.name }}, Offer title: {{ offer.title }}, Offer description: {{ offer.description }}
+            </li>
+        </ul>
+        <p v-else>No offers available yet.</p>
         </div>
       </div>
     </div>
@@ -30,7 +36,6 @@ export default {
     async logout() {
       try {
         const token = localStorage.getItem('token');
-        console.log("Token retrieved:", token);
 
         if (!token) {
           console.error('No token found');
@@ -56,7 +61,42 @@ export default {
         }
       }
     }
-  }
+  },
+  data() {
+    return {
+        offers: [],
+    };
+},
+mounted() {
+    console.log('Component mounted');
+    this.fetchUserOffers(); 
+},
+methods: {
+    fetchUserOffers() {
+        const token = localStorage.getItem('token');
+
+        
+        if (token) {
+            
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+            };
+
+            axios.get('http://localhost:8000/api/fetchuseroffers', { headers })
+                .then(response => {
+                    console.log('API Response:', response.data);
+                    this.offers = response.data.applies;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        } else {
+            
+            console.error('Token not found in localStorage.');
+        }
+    },
+},
+
 };
 
   </script>
